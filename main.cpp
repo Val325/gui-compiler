@@ -155,23 +155,36 @@ int main() {
       nk_label(ctx, "selected file", NK_TEXT_RIGHT);
       
     
-      static char buf_sel[256] = {0};
+      static char buf_sel[256];
+      buf_sel[0] = '/';
       static int text_len_sel = 0;
 
       nk_layout_row_static(ctx, 30, 200, 1);
+      std::string path_sel_file = "";
+
       nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_sel,&text_len_sel, 64, nk_filter_default);
-      if (nk_button_label (ctx, "selected file"){
-        
+      if (nk_button_label(ctx, "selected file")){
+        path_sel_file = tinyfd_openFileDialog("","",0, NULL,"main file",20);
+        int size_sel_file_char = sizeof(path_sel_file) - 1;
+        text_len_sel = size_sel_file_char;
+        //strcpy(buf_sel, path_sel_file.c_str());
+        //std::copy(std::begin(buf_sel), std::end(buf_sel), std::begin(path_sel_file));
+        std::cout << "path select file" << path_sel_file << "\n";
       }
+      
+      strcpy(buf_sel, path_sel_file.c_str());
+
 	      //printf ("%s\n", buf);
       
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "output file file", NK_TEXT_RIGHT);
-
+      std::string path_output_file = "";
       nk_layout_row_static(ctx, 30, 200, 1);
       nk_edit_string(ctx, NK_EDIT_SIMPLE, buf,&text_len , 64, nk_filter_default);
-      if (nk_button_label (ctx, "output file!"))
-	      printf ("%s\n", buf);
+      if (nk_button_label(ctx, "output file!")){
+        printf ("%s\n", buf);
+
+      }
 
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "compiler generated command:", NK_TEXT_RIGHT);
