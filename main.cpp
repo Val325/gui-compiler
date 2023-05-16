@@ -33,19 +33,61 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
+GLFWwindow* window;
+struct nk_context *ctx;
+int width = 0, height = 0;
+struct nk_colorf bg;
+enum {GCC, GPLUS};
+static int op = GCC;
+static float value = 0.6f;
+static int i =  20;
+std::string compilerStr;
+//
+// includes
+//
+
+//path to includes
+std::string path_includes = "";
+
+//
+// libs
+//
+
+//path to libs
+std::string path_libs = "";
+
+//output
+std::string path_out_file = "";
+std::string path_out_file2 = "";
+
+
+//select
+std::string path_sel_file2 = "";
+
+
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 400;
-int main() {
-  GLFWwindow* window;
-  struct nk_context *ctx;
-  int width = 0, height = 0;
-  struct nk_colorf bg;
-  //path to includes
-  std::string path_includes = "";
-  //path to libs
-  std::string path_libs = "";
-  
 
+
+
+void select_includes(){
+  if (nk_button_label(ctx, "Select includes folders")){
+    path_includes = tinyfd_selectFolderDialog("select include folders", "pwd");
+    std::cout << "includes:" << path_includes << "\n";
+  }
+
+}
+
+void select_libs(){
+   if (nk_button_label(ctx, "Select libs folders (windows)")){
+    path_libs = tinyfd_selectFolderDialog("select libs folders", "pwd");
+    std::cout << "libs:" << path_libs << "\n";
+  }
+
+}
+
+int main() {
+  
    /* Initialize the library */
   if (!glfwInit())
     return -1;
@@ -87,12 +129,6 @@ int main() {
     /* Input */
     glfwPollEvents();
     nk_glfw3_new_frame();
-      //here gui 
-    enum {GCC, GPLUS};
-    static int op = GCC;
-    static float value = 0.6f;
-    static int i =  20;
-    std::string compilerStr;
     if (nk_begin(ctx, "miniguicompiler", nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
       NK_WINDOW_BORDER)) {
       /* fixed widget pixel width */
@@ -111,15 +147,22 @@ int main() {
       nk_layout_row_static(ctx, 30, 100, 1);
       if (nk_option_label(ctx, "gcc", op == GCC)){
         op = GCC;
-        compilerStr = "gcc";
+        compilerStr = "gcc ";
       } 
       if (nk_option_label(ctx, "g++", op == GPLUS)){
          op = GPLUS;
-         compilerStr = "g++";
+         compilerStr = "g++ ";
       }
       nk_label(ctx, "  Yours folders for compilation:", NK_TEXT_RIGHT);
-
+      
       nk_layout_row_static(ctx, 30, 150, 2);
+      //
+      //buttons
+      //
+      select_includes();
+      select_libs();
+      
+      /*
       if (nk_button_label(ctx, "Select includes folders")){
         path_includes = tinyfd_selectFolderDialog("select include folders", "pwd");
         std::cout << "includes:" << path_includes << "\n";
@@ -127,7 +170,7 @@ int main() {
       if (nk_button_label(ctx, "Select libs folders")){
         path_libs = tinyfd_selectFolderDialog("select libs folders", "pwd");
         std::cout << "libs:" << path_libs << "\n";
-      }
+      }*/
       nk_layout_row_static(ctx, 30, 0, 1);
 
       if (path_includes.c_str() != "") {
@@ -150,13 +193,18 @@ int main() {
       static int text_len = 0;
 
       // in window
-      //nk_edit_string_zero_terminated (ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1, nk_filter_default);
+
+
+      //************************
+      // SELECT
+      //************************
+      
       nk_layout_row_static(ctx, 30, 0, 1);
-      nk_label(ctx, "selected file", NK_TEXT_RIGHT);
+      nk_label(ctx, "selected main file", NK_TEXT_RIGHT);
       
     
       static char buf_sel[256];
-      buf_sel[0] = '/';
+      buf_sel[0] = ' ';
       static int text_len_sel = 0;
 
       nk_layout_row_static(ctx, 30, 200, 1);
@@ -170,29 +218,57 @@ int main() {
         //strcpy(buf_sel, path_sel_file.c_str());
         //std::copy(std::begin(buf_sel), std::end(buf_sel), std::begin(path_sel_file));
         std::cout << "path select file" << path_sel_file << "\n";
+        path_sel_file2 = path_sel_file;
+
       }
-      
+      //std::string path_sel_file2 = path_sel_file;
       strcpy(buf_sel, path_sel_file.c_str());
+      //std::cout << "path select file after strcpy" << path_sel_file << "\n";
+
+      //strcpy(path_sel_file.c_str(), buf_sel);
 
 	      //printf ("%s\n", buf);
       
-      nk_layout_row_static(ctx, 30, 0, 1);
-      nk_label(ctx, "output file file", NK_TEXT_RIGHT);
-      std::string path_output_file = "";
-      nk_layout_row_static(ctx, 30, 200, 1);
-      nk_edit_string(ctx, NK_EDIT_SIMPLE, buf,&text_len , 64, nk_filter_default);
-      if (nk_button_label(ctx, "output file!")){
-        printf ("%s\n", buf);
+      //************************
+      // Output
+      //************************
+      static char buf_output[256];
+      //buf_output[0] = ;
+      static int text_len_output = 0;
 
+
+      nk_layout_row_static(ctx, 30, 0, 1);
+      nk_label(ctx, "output file name", NK_TEXT_RIGHT);
+      //std::string path_output_file = "";
+      nk_layout_row_static(ctx, 30, 200, 1);
+      nk_edit_string(ctx, NK_EDIT_SIMPLE,buf_output , &text_len_output, 64, nk_filter_default);
+      if (nk_button_label(ctx, "output file!")){
+        std::cout << "output file " << buf_output << "\n";
+        std::cout << "generation compiler command.." << "\n";
+        
       }
+      std::string output_data(buf_output);
+      //strcpy(buf_output, path_out_file.c_str());
+
+      //************************
+      // Compile
+      //************************
 
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "compiler generated command:", NK_TEXT_RIGHT);
-      
+      std::string path_output_file = "";
+
       nk_layout_row_static(ctx, 30, 200, 1);
       nk_edit_string(ctx, NK_EDIT_SIMPLE, buf,&text_len , 64, nk_filter_default);
-      if (nk_button_label (ctx, "compile!"))
-	      printf ("%s\n", buf);
+      if (nk_button_label (ctx, "compile!")){
+        std::cout << "compile" << "\n";
+        std::string output_sym = " -o ";
+
+        path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
+        std::cout << "command" << path_output_file << "\n";
+
+        system(path_output_file.c_str());
+      }
       /* custom widget pixel width */
       //nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
       //{
