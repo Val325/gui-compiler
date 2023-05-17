@@ -5,4 +5,4 @@ outputfile = window
 includedir = -Inuklear/ -Icode/
 
 make: main.cpp
-	${compiler} ${namecode} ${libs} -o ${outputfile} ${includedir}
+	${compiler} -g ${namecode} ${libs} -o ${outputfile} ${includedir}

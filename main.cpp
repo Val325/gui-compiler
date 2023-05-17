@@ -26,12 +26,15 @@
 #include <nuklear.h>
 #include "nuklear_glfw_gl3.h"
 #include "tinyfiledialogs.c"
+//#include "tinyfiledialogs.h"
 
 //#define WINDOW_WIDTH 600
 //#define WINDOW_HEIGHT 400
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
+
+
 
 GLFWwindow* window;
 struct nk_context *ctx;
@@ -47,14 +50,17 @@ std::string compilerStr;
 //
 
 //path to includes
-std::string path_includes = "";
+//std::string path_includes = "";
+char const * path_includes;
+
 
 //
 // libs
 //
 
 //path to libs
-std::string path_libs = "";
+//std::string path_libs = "";
+char const * path_libs;
 
 //output
 std::string path_out_file = "";
@@ -64,6 +70,29 @@ std::string path_out_file2 = "";
 //select
 std::string path_sel_file2 = "";
 
+//output command
+std::string path_output_file = "";
+
+
+std::string includes_text = "-I";
+std::string libs_text = "-l";
+//main buf command
+static char buf[256];
+static int text_len = 0;
+
+//select
+static char buf_sel[256];
+//buf_sel[0] = ' ';
+static int text_len_sel = 0;
+
+
+//output
+static char buf_output[256];
+static int text_len_output = 0;
+
+//compile
+static char buf_compile[256];
+static int text_len_compile = 0;
 
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 400;
@@ -72,15 +101,24 @@ int WINDOW_HEIGHT = 400;
 
 void select_includes(){
   if (nk_button_label(ctx, "Select includes folders")){
-    path_includes = tinyfd_selectFolderDialog("select include folders", "pwd");
+     
+    path_includes = tinyfd_selectFolderDialog("select include folders", NULL);
+    if (!path_includes) {
+      return;
+    }
     std::cout << "includes:" << path_includes << "\n";
+    
+    //std::cout << "includes:" << path_includes << "\n";
   }
 
 }
 
 void select_libs(){
    if (nk_button_label(ctx, "Select libs folders (windows)")){
-    path_libs = tinyfd_selectFolderDialog("select libs folders", "pwd");
+    path_libs = tinyfd_selectFolderDialog("select libs folders", "");
+     if (!path_libs) {
+      return;
+    }
     std::cout << "libs:" << path_libs << "\n";
   }
 
@@ -173,25 +211,26 @@ int main() {
       }*/
       nk_layout_row_static(ctx, 30, 0, 1);
 
-      if (path_includes.c_str() != "") {
+      if (path_includes != NULL) {
         std::string includes_text = "includes: ";
-        std::string full_label_path_lncludes = includes_text + path_includes;
+        std::string includ_cplus(includes_text);
+        std::string full_label_path_lncludes = includ_cplus + path_includes;
 
         nk_label(ctx, full_label_path_lncludes.c_str(), NK_TEXT_RIGHT);
       }
-      if (path_libs.c_str() != "-I") {
+      if (path_libs != NULL) {
         std::string libs_text = "libs: ";
         std::string full_label_path_lib = libs_text + path_libs;
         nk_label(ctx, full_label_path_lib.c_str(), NK_TEXT_RIGHT);
 
       }
       nk_layout_row_static(ctx, 30, 200, 1);
-      
+     /* 
       std::string includes_text = "-I";
       std::string libs_text = "libs: ";
-      static char buf[256] = {0};
+      static char buf[256];
       static int text_len = 0;
-
+    */
       // in window
 
 
@@ -202,11 +241,11 @@ int main() {
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "selected main file", NK_TEXT_RIGHT);
       
-    
-      static char buf_sel[256];
+      
+      //static char buf_sel[256];
       buf_sel[0] = ' ';
-      static int text_len_sel = 0;
-
+      //static int text_len_sel = 0;
+      
       nk_layout_row_static(ctx, 30, 200, 1);
       std::string path_sel_file = "";
 
@@ -232,9 +271,9 @@ int main() {
       //************************
       // Output
       //************************
-      static char buf_output[256];
+      //static char buf_output[256];
       //buf_output[0] = ;
-      static int text_len_output = 0;
+      //static int text_len_output = 0;
 
 
       nk_layout_row_static(ctx, 30, 0, 1);
@@ -245,30 +284,48 @@ int main() {
       if (nk_button_label(ctx, "output file!")){
         std::cout << "output file " << buf_output << "\n";
         std::cout << "generation compiler command.." << "\n";
-        
-      }
-      std::string output_data(buf_output);
-      //strcpy(buf_output, path_out_file.c_str());
+        std::string output_sym = " -o ";
+        std::string output_data(buf_output);
+        int size_sel_compile_char = sizeof(path_output_file) - 1;
+        text_len_compile = size_sel_compile_char;
 
-      //************************
+        path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
+        std::cout << "command " << path_output_file << "\n";
+
+
+      }
+      strcpy(buf_compile, path_output_file.c_str());
+
+      //std::string output_data(buf_output);
+      //
+      //std::cout << "path_output_file" << path_output_file << "\n";
+           //************************
       // Compile
       //************************
+      //static char buf_compile[256];
+      //buf_output[0] = ;
+      //static int text_len_compile = 0;
 
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "compiler generated command:", NK_TEXT_RIGHT);
-      std::string path_output_file = "";
+      //std::string path_output_file = "";
 
       nk_layout_row_static(ctx, 30, 200, 1);
-      nk_edit_string(ctx, NK_EDIT_SIMPLE, buf,&text_len , 64, nk_filter_default);
+      nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_compile,&text_len_compile , 64, nk_filter_default);
       if (nk_button_label (ctx, "compile!")){
         std::cout << "compile" << "\n";
-        std::string output_sym = " -o ";
+        std::cout << "command " << path_output_file << "\n";
+        std::cout << "command " << buf_compile << "\n";
 
-        path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
-        std::cout << "command" << path_output_file << "\n";
+        //std::string output_sym = " -o ";
+
+        //path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
+        //std::cout << "command" << path_output_file << "\n";
 
         system(path_output_file.c_str());
       }
+      //strcpy(buf_compile, path_output_file.c_str());
+
       /* custom widget pixel width */
       //nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
       //{
