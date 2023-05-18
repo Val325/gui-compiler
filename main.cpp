@@ -26,10 +26,6 @@
 #include <nuklear.h>
 #include "nuklear_glfw_gl3.h"
 #include "tinyfiledialogs.c"
-//#include "tinyfiledialogs.h"
-
-//#define WINDOW_WIDTH 600
-//#define WINDOW_HEIGHT 400
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -50,7 +46,6 @@ std::string compilerStr;
 //
 
 //path to includes
-//std::string path_includes = "";
 char const * path_includes;
 
 
@@ -58,8 +53,6 @@ char const * path_includes;
 // libs
 //
 
-//path to libs
-//std::string path_libs = "";
 char const * path_libs;
 
 //output
@@ -76,6 +69,7 @@ std::string path_output_file = "";
 
 std::string includes_text = "-I";
 std::string libs_text = "-l";
+
 //main buf command
 static char buf[256];
 static int text_len = 0;
@@ -96,7 +90,7 @@ static int text_len_compile = 0;
 
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 400;
-
+int INPUT_WIDTH = WINDOW_WIDTH - 40;
 
 
 void select_includes(){
@@ -121,10 +115,8 @@ void select_libs(){
     }
     std::cout << "libs:" << path_libs << "\n";
   }
-
 }
-
-int main() {
+int main(){
   
    /* Initialize the library */
   if (!glfwInit())
@@ -169,14 +161,7 @@ int main() {
     nk_glfw3_new_frame();
     if (nk_begin(ctx, "miniguicompiler", nk_rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
       NK_WINDOW_BORDER)) {
-      /* fixed widget pixel width */
-      //nk_layout_row_static(ctx, 20, 80, 2);
-      //if (nk_button_label(ctx, "button")) {
-        /* event handling */
-      //}
-      // if (nk_button_label(ctx, "delete being")) {
-        /* event handling */
-      //}
+     
       nk_label(ctx, "  Which compiler you want using?", NK_TEXT_RIGHT);
 
 
@@ -200,17 +185,10 @@ int main() {
       select_includes();
       select_libs();
       
-      /*
-      if (nk_button_label(ctx, "Select includes folders")){
-        path_includes = tinyfd_selectFolderDialog("select include folders", "pwd");
-        std::cout << "includes:" << path_includes << "\n";
-      }
-      if (nk_button_label(ctx, "Select libs folders")){
-        path_libs = tinyfd_selectFolderDialog("select libs folders", "pwd");
-        std::cout << "libs:" << path_libs << "\n";
-      }*/
+     
       nk_layout_row_static(ctx, 30, 0, 1);
-
+     
+      
       if (path_includes != NULL) {
         std::string includes_text = "includes: ";
         std::string includ_cplus(includes_text);
@@ -224,69 +202,55 @@ int main() {
         nk_label(ctx, full_label_path_lib.c_str(), NK_TEXT_RIGHT);
 
       }
-      nk_layout_row_static(ctx, 30, 200, 1);
-     /* 
-      std::string includes_text = "-I";
-      std::string libs_text = "libs: ";
-      static char buf[256];
-      static int text_len = 0;
-    */
+    
       // in window
 
 
       //************************
       // SELECT
       //************************
-      
+      if (nk_tree_push(ctx, NK_TREE_TAB, "Selected files", NK_MINIMIZED)) {
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "selected main file", NK_TEXT_RIGHT);
       
       
-      //static char buf_sel[256];
-      buf_sel[0] = ' ';
-      //static int text_len_sel = 0;
-      
-      nk_layout_row_static(ctx, 30, 200, 1);
-      std::string path_sel_file = "";
 
-      nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_sel,&text_len_sel, 64, nk_filter_default);
+      buf_sel[0] = ' ';
+    
+      
+      nk_layout_row_static(ctx, 30, WINDOW_WIDTH - 40, 1);
+      std::string path_sel_file = "";
+    
+      nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_sel,&text_len_sel, 256, nk_filter_default);
       if (nk_button_label(ctx, "selected file")){
         path_sel_file = tinyfd_openFileDialog("","",0, NULL,"main file",20);
-        int size_sel_file_char = sizeof(path_sel_file) - 1;
+
+        int size_sel_file_char = path_sel_file.length();
+
         text_len_sel = size_sel_file_char;
-        //strcpy(buf_sel, path_sel_file.c_str());
-        //std::copy(std::begin(buf_sel), std::end(buf_sel), std::begin(path_sel_file));
+
         std::cout << "path select file" << path_sel_file << "\n";
         path_sel_file2 = path_sel_file;
 
       }
-      //std::string path_sel_file2 = path_sel_file;
+
       strcpy(buf_sel, path_sel_file.c_str());
-      //std::cout << "path select file after strcpy" << path_sel_file << "\n";
-
-      //strcpy(path_sel_file.c_str(), buf_sel);
-
-	      //printf ("%s\n", buf);
       
       //************************
       // Output
       //************************
-      //static char buf_output[256];
-      //buf_output[0] = ;
-      //static int text_len_output = 0;
-
 
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "output file name", NK_TEXT_RIGHT);
       //std::string path_output_file = "";
-      nk_layout_row_static(ctx, 30, 200, 1);
+      nk_layout_row_static(ctx, 30, INPUT_WIDTH, 1);
       nk_edit_string(ctx, NK_EDIT_SIMPLE,buf_output , &text_len_output, 64, nk_filter_default);
       if (nk_button_label(ctx, "output file!")){
         std::cout << "output file " << buf_output << "\n";
         std::cout << "generation compiler command.." << "\n";
         std::string output_sym = " -o ";
         std::string output_data(buf_output);
-        int size_sel_compile_char = sizeof(path_output_file) - 1;
+        int size_sel_compile_char = path_output_file.length();
         text_len_compile = size_sel_compile_char;
 
         path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
@@ -296,46 +260,27 @@ int main() {
       }
       strcpy(buf_compile, path_output_file.c_str());
 
-      //std::string output_data(buf_output);
-      //
-      //std::cout << "path_output_file" << path_output_file << "\n";
-           //************************
+      //************************
       // Compile
       //************************
-      //static char buf_compile[256];
-      //buf_output[0] = ;
-      //static int text_len_compile = 0;
-
+     
       nk_layout_row_static(ctx, 30, 0, 1);
       nk_label(ctx, "compiler generated command:", NK_TEXT_RIGHT);
-      //std::string path_output_file = "";
 
-      nk_layout_row_static(ctx, 30, 200, 1);
+      nk_layout_row_static(ctx, 30, INPUT_WIDTH, 1);
       nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_compile,&text_len_compile , 64, nk_filter_default);
-      if (nk_button_label (ctx, "compile!")){
+      strcpy(buf_compile, path_output_file.c_str());
+        nk_tree_pop(ctx);
+    }
+  }
+    if (nk_button_label (ctx, "compile!")){
         std::cout << "compile" << "\n";
         std::cout << "command " << path_output_file << "\n";
         std::cout << "command " << buf_compile << "\n";
 
-        //std::string output_sym = " -o ";
-
-        //path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
-        //std::cout << "command" << path_output_file << "\n";
-
+ 
         system(path_output_file.c_str());
       }
-      //strcpy(buf_compile, path_output_file.c_str());
-
-      /* custom widget pixel width */
-      //nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
-      //{
-      //  nk_layout_row_push(ctx, 50);
-      //  nk_label(ctx, "Volume:", NK_TEXT_LEFT);
-      //  nk_layout_row_push(ctx, 110);
-      //  nk_slider_float(ctx, 0, &value, 1.0f, 0.1f);
-      //}
-      //nk_layout_row_end(ctx);
-    }
     nk_end(ctx);
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -362,5 +307,6 @@ int main() {
     glfwTerminate();
     return 0;
 }
+
 
 
