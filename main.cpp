@@ -26,6 +26,7 @@
 #include <nuklear.h>
 #include "nuklear_glfw_gl3.h"
 #include "tinyfiledialogs.c"
+#include <vector>
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -47,13 +48,13 @@ std::string compilerStr;
 
 //path to includes
 char const * path_includes;
+std::vector<std::string> arrays_all_includes_path;
 
 
-//
+
 // libs
-//
-
 char const * path_libs;
+std::vector<std::string> arrays_all_libs_path;
 
 //output
 std::string path_out_file = "";
@@ -66,9 +67,13 @@ std::string path_sel_file2 = "";
 //output command
 std::string path_output_file = "";
 
-
+//symbols
 std::string includes_text = "-I";
 std::string libs_text = "-l";
+
+//all libraries
+std::string all_libraries = "";
+std::vector<std::string> arrays_all_libs;
 
 //main buf command
 static char buf[256];
@@ -116,6 +121,14 @@ void select_libs(){
     std::cout << "libs:" << path_libs << "\n";
   }
 }
+
+void add_libraries(){
+  //
+}
+void delete_libraries(){
+  //
+}
+
 int main(){
   
    /* Initialize the library */
@@ -271,9 +284,12 @@ int main(){
   }
     if (nk_tree_push(ctx, NK_TREE_TAB, "Selected libs", NK_MINIMIZED)) {
         //bool isClicked = false;
-        static int isClocked = 0;
+        static int glfw_lib = 1;
 
-        nk_checkbox_label(ctx, "Titlebar", &isClocked);
+        nk_checkbox_label(ctx, "glfw", &glfw_lib);
+        if (glfw_lib == 0) {
+          std::cout << "selected glfw" << "\n";
+        }
         /*
         nk_checkbox_label(ctx, "Menu", NULL);
         nk_checkbox_label(ctx, "Border", NULL);
