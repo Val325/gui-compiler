@@ -93,6 +93,11 @@ static int text_len_output = 0;
 static char buf_compile[256];
 static int text_len_compile = 0;
 
+//added libs
+static char buf_added_libs[256];
+static int text_len_added_libs = 0;
+std::string output_data_all_libs = "";
+
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 400;
 int INPUT_WIDTH = WINDOW_WIDTH - 40;
@@ -265,7 +270,7 @@ int main(){
           int size_sel_compile_char = path_output_file.length();
           text_len_compile = size_sel_compile_char;
 
-          path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
+          path_output_file = compilerStr + path_sel_file2 + output_sym + output_data + all_libraries;
           std::cout << "command " << path_output_file << "\n";
         }
         strcpy(buf_compile, path_output_file.c_str());
@@ -285,6 +290,25 @@ int main(){
     if (nk_tree_push(ctx, NK_TREE_TAB, "Selected libs", NK_MINIMIZED)) {
         //bool isClicked = false;
         static int glfw_lib = 1;
+        
+        nk_layout_row_static(ctx, 30, INPUT_WIDTH, 1);
+        nk_edit_string(ctx, NK_EDIT_SIMPLE,buf_added_libs , &text_len_added_libs, 64, nk_filter_default);
+        
+        if (nk_button_label(ctx, "add libs")){
+          std::cout << "output add libs " << buf_added_libs << "\n";
+          std::string output_data_libs(buf_added_libs);
+          std::string space_sym = " ";
+
+          int size_addlib_char = output_data_libs.length();
+          text_len_added_libs = size_addlib_char;
+          output_data_all_libs = output_data_libs + space_sym;
+          all_libraries += libs_text + output_data_all_libs; 
+
+          //all_libraries =
+          //path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
+          //std::cout << "command " << path_output_file << "\n";
+        }
+        //std::cout << "all libraries " << all_libraries << "\n";
 
         nk_checkbox_label(ctx, "glfw", &glfw_lib);
         if (glfw_lib == 0) {
