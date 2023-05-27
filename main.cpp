@@ -70,9 +70,10 @@ std::string path_output_file = "";
 //symbols
 std::string includes_text = "-I";
 std::string libs_text = "-l";
+std::string space_format = " ";
 
 //all libraries
-std::string all_libraries = "";
+std::string all_libraries = " ";
 std::vector<std::string> arrays_all_libs;
 
 //main buf command
@@ -83,7 +84,6 @@ static int text_len = 0;
 static char buf_sel[256];
 //buf_sel[0] = ' ';
 static int text_len_sel = 0;
-
 
 //output
 static char buf_output[256];
@@ -97,6 +97,11 @@ static int text_len_compile = 0;
 static char buf_added_libs[256];
 static int text_len_added_libs = 0;
 std::string output_data_all_libs = "";
+
+//added options
+static char buf_added_options[256];
+static int text_len_added_options = 0;
+std::string output_data_all_options = "";
 
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 400;
@@ -259,7 +264,7 @@ int main(){
 
         nk_layout_row_static(ctx, 30, 0, 1);
         nk_label(ctx, "output file name", NK_TEXT_RIGHT);
-        //std::string path_output_file = "";
+
         nk_layout_row_static(ctx, 30, INPUT_WIDTH, 1);
         nk_edit_string(ctx, NK_EDIT_SIMPLE,buf_output , &text_len_output, 64, nk_filter_default);
         if (nk_button_label(ctx, "output file!")){
@@ -270,7 +275,28 @@ int main(){
           int size_sel_compile_char = path_output_file.length();
           text_len_compile = size_sel_compile_char;
 
-          path_output_file = compilerStr + path_sel_file2 + output_sym + output_data + all_libraries;
+          std::cout << "----------------------------" << "\n";
+          std::cout << "compilerStr " << compilerStr << "\n";
+          std::cout << "space_format " << space_format << "\n";
+          std::cout << "includes_text " << includes_text << "\n";
+          //std::cout << "path_includes " << path_includes << "\n";
+          std::cout << "libs_text " << libs_text << "\n";
+          std::cout << "path_sel_file2 " << path_sel_file2 << "\n";
+          std::cout << "output_sym " << output_sym << "\n";
+          std::cout << "output_data " << output_data << "\n";
+          std::cout << "all_libraries " << all_libraries << "\n";
+          std::cout << "----------------------------" << "\n";
+          if (!path_includes && !path_libs) {
+            path_output_file = compilerStr + space_format + path_sel_file2 + output_sym + output_data + all_libraries;
+
+          } else if (!path_includes) {
+            path_output_file = compilerStr + space_format + libs_text + path_libs + space_format + path_sel_file2 + output_sym + output_data + all_libraries;
+
+          } else if (!path_libs) {
+            path_output_file = compilerStr + space_format + includes_text + path_includes + space_format + path_sel_file2 + output_sym + output_data + all_libraries;
+
+          }         
+          //path_output_file = compilerStr + space_format + includes_text + path_includes + space_format + libs_text + path_libs + space_format + path_sel_file2 + output_sym + output_data + all_libraries;
           std::cout << "command " << path_output_file << "\n";
         }
         strcpy(buf_compile, path_output_file.c_str());
@@ -282,7 +308,7 @@ int main(){
         nk_label(ctx, "compiler generated command:", NK_TEXT_RIGHT);
 
         nk_layout_row_static(ctx, 30, INPUT_WIDTH, 1);
-        nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_compile,&text_len_compile , 64, nk_filter_default);
+        nk_edit_string(ctx, NK_EDIT_SIMPLE, buf_compile,&text_len_compile, 64, nk_filter_default);
         strcpy(buf_compile, path_output_file.c_str());
         nk_tree_pop(ctx);
     }
@@ -304,27 +330,38 @@ int main(){
           output_data_all_libs = output_data_libs + space_sym;
           all_libraries += libs_text + output_data_all_libs; 
 
-          //all_libraries =
-          //path_output_file = compilerStr + path_sel_file2 + output_sym + output_data;
-          //std::cout << "command " << path_output_file << "\n";
+
         }
-        //std::cout << "all libraries " << all_libraries << "\n";
+
 
         nk_checkbox_label(ctx, "glfw", &glfw_lib);
         if (glfw_lib == 0) {
           std::cout << "selected glfw" << "\n";
+          glfw_lib == 1;
         }
-        /*
-        nk_checkbox_label(ctx, "Menu", NULL);
-        nk_checkbox_label(ctx, "Border", NULL);
-        nk_checkbox_label(ctx, "Resizable", NULL);
-        nk_checkbox_label(ctx, "Movable", NULL);
-        nk_checkbox_label(ctx, "No Scrollbar", NULL);
-        nk_checkbox_label(ctx, "Minimizable", NULL);
-        nk_checkbox_label(ctx, "Scale Left", NULL);*/
+       
         nk_tree_pop(ctx);
     }
     if (nk_tree_push(ctx, NK_TREE_TAB, "Selected options", NK_MINIMIZED)) {
+        static int options_Wall = 1;
+        static int options_g = 1;
+        static int options_numG = 1;
+        nk_checkbox_label(ctx, "options_Wall", &options_Wall);
+        if (options_Wall == 0) {
+          std::cout << "selected -Wall" << "\n";
+          options_Wall == 1;
+        }
+        nk_checkbox_label(ctx, "options_g", &options_g);
+        if (options_g == 0) {
+          std::cout << "selected -g" << "\n";
+          options_g == 1;
+        }
+        nk_checkbox_label(ctx, "options_numG", &options_numG);
+        if (options_numG == 0) {
+          std::cout << "selected -0g" << "\n";
+          options_numG == 1;
+        }
+
         nk_tree_pop(ctx);
     }
     if (nk_button_label (ctx, "compile!")){
